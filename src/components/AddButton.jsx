@@ -4,11 +4,10 @@ import AddNewList from "./AddNewList";
 import styled from "styled-components";
 
 const ButtonContainerStyle = styled.div`
-    background-color: ${props => (props.list === "true" ? "rgba(0, 0, 0, .3)" : "transparent")};
+    background-color: ${props => (props.list === "true" ? "rgba(0, 0, 0, .3)" : "#ebecf0")};
     max-height: 35px;
     width: ${props => (props.list === "true" ? "272px" : "100%")};
     border-radius: 3px;
-    margin-bottom: 8px;
     color: ${props => (props.list === "true" ? "#fff" : "#5e6c84")};
     font-size: 14px;
     font-weight: 400;
@@ -17,6 +16,9 @@ const ButtonContainerStyle = styled.div`
     display: ${props => (props.list === "true" ? "inline-block" : "block")};
     cursor: pointer;
     transition: all linear .1s;
+    position: ${props => (props.list === "false" && "absolute")};
+    bottom: ${props => (props.list === "false" && "-27px")};
+    left: ${props => (props.list === "false" && "0px")};
     &:hover {
         transition: all ease .1s;
         background-color: ${props => (props.list === "true" ? "rgba(0, 0, 0, .2)" : "#ccc")};
@@ -59,9 +61,9 @@ class AddButton extends React.Component {
             <ButtonContainerStyle list={this.props.list} onClick={this.onAddMode}>
                 <IconStyle>+</IconStyle>
                 <span>
-                    {this.props.list 
+                    {this.props.list === "false"
                         ? "Add another card" 
-                        : "Add another card"
+                        : "Add another list"
                     }
                 </span>
             </ButtonContainerStyle>

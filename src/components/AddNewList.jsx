@@ -105,13 +105,13 @@ class AddNewList extends React.Component {
             <ContainerStyle>
                 <TextareaContainerStyle>
                     <TextareaAutosize 
-                        placeholder={"Enter a title for this card…"} 
+                        placeholder={"Enter list title..."} 
                         value={this.state.textareaValue}
                         onChange={this.handleTextarea}
                     />
                 </TextareaContainerStyle>   
                 <ButtonAddContainerStyle>
-                    <AddCardBtnStyle onClick={this.handleAddButton}>Add Card</AddCardBtnStyle>
+                    <AddCardBtnStyle onClick={this.handleAddButton}>Add List</AddCardBtnStyle>
                     <CloseCardBtnStyle onClick={this.handleCloseBtn}>+</CloseCardBtnStyle>
                 </ButtonAddContainerStyle>
                 

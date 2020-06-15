@@ -5,8 +5,12 @@ import ColumnCard from "./ColumnCard";
 import AddButton from './AddButton';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-import {addNewCardThunkCallback, addNewListThunkCallback, dragTaskInCurrentColumnThunkCallback, dragTaskInOtherColumnThunkCallback} from "../reducers/listCard-reducer";
-import {DragDropContext, Droppable} from "react-beautiful-dnd";
+import {
+  addNewCardThunkCallback, addNewListThunkCallback, dragTaskInCurrentColumnThunkCallback, 
+  dragTaskInOtherColumnThunkCallback, dragColumnThunkCallback,
+} from "../reducers/listCard-reducer";
+import {DragDropContext, Droppable, Draggable} from "react-beautiful-dnd";
+
 
 
 let ColumnCardStyle = styled.div`
@@ -19,8 +23,10 @@ let ColumnCardStyle = styled.div`
   padding-bottom: 8px;
   position: absolute;
   margin-top: 40px;
-  height: 100%; 
+  height: 80%; 
   min-height: ${props => !props.isDraggingOver && "75px"};
+  display: flex;
+  align-items: flex-start;
 `;
 let ColumnCardContainerStyle = styled.div`
   background-color: #ebecf0;
@@ -57,6 +63,15 @@ class ListCardPage extends React.Component {
   onDragEnd = result => {
     let {destination, source, draggableId, type} = result;
 
+
+    if (type === "COLUMN") { //Передвигаем колонку
+      if (destination === null) return;
+      let sourceIndex = source.index;
+      let destinationIndex = destination.index;
+      this.props.dragColumnThunkCallback(sourceIndex, destinationIndex);
+      return;
+    }
+
     if ((!destination) || destination.index === source.index &&  //Если таск никуда не кинут или кинут на тоже место
         destination.droppableId === source.droppableId
         ) {
@@ -81,7 +96,10 @@ class ListCardPage extends React.Component {
       this.props.dragTaskInOtherColumnThunkCallback(currentColumn, destinationColumn, currentTaskindex, destinationTaskIndex);
     }
 
+
   }
+
+
 
   render() {
     let {listCardPage} = this.props;
@@ -89,35 +107,48 @@ class ListCardPage extends React.Component {
       <div>
           <Header />
           <DragDropContext onDragEnd={this.onDragEnd}>
-            <ColumnCardStyle>
-              {listCardPage.columnOrder.map((column, index) => {
-                let oneColumn = listCardPage.columns[column];
-                let tasks = oneColumn.taskList.map(task => listCardPage.tasks[task]);
+            <Droppable droppableId={"all-columns"} direction={"horizontal"} type={"COLUMN"}>
+              {(provided, snapshot) => {
                 return(
-                  <Droppable droppableId={oneColumn.id} index={index} key={oneColumn.id}>
-                    {(provided, snapshot) => {
+                  <ColumnCardStyle 
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    {listCardPage.columnOrder.map((column, index) => {
+                      let oneColumn = listCardPage.columns[column];
+                      let tasks = oneColumn.taskList.map(task => listCardPage.tasks[task]);
                       return(
-                        <ColumnCardContainerStyle>
-                          <ColumnCard
-                            isDraggingOver={snapshot.isDraggingOver}
-                            innerRef={provided.innerRef} 
-                            {...provided.droppableProps}
-                            key={oneColumn.id}
-                            index={index}
-                            addNewCard={this.addNewCard}
-                            tasks={tasks} //Таски для этой карточки
-                            {...oneColumn} //Данные для одной колонки
-                          />
-                          {provided.placeholder}
-                        </ColumnCardContainerStyle>
+                        <Draggable draggableId={oneColumn.id} index={index} key={oneColumn.id}>
+                          {(provided, snapshot) => {
+                            return(
+                                <ColumnCardContainerStyle
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  ref={provided.innerRef}
+                                >
+                                  <ColumnCard
+                                    key={oneColumn.id}
+                                    index={index}
+                                    addNewCard={this.addNewCard}
+                                    tasks={tasks} //Таски для этой карточки
+                                    {...oneColumn} //Данные для одной колонки
+                                  />
+                                  
+                                </ColumnCardContainerStyle>
+                            )
+                          }}
+                        </Draggable>
                       )
-                    }}
-                  </Droppable>
+                    })}
+                    
+                    {provided.placeholder}
+                    <AddButton list="true" addNewList={this.addNewList}/>
+                  </ColumnCardStyle>
                 )
-              })}
-              <AddButton list="true" addNewList={this.addNewList}/>
-            </ColumnCardStyle>
+              }}
+            </Droppable>
           </DragDropContext>
+          
       </div>
     );
   }
@@ -126,5 +157,8 @@ class ListCardPage extends React.Component {
 
 
 export default compose(
-  connect(mapStateToProps, {addNewCardThunkCallback, addNewListThunkCallback, dragTaskInCurrentColumnThunkCallback, dragTaskInOtherColumnThunkCallback})
+  connect(mapStateToProps, {
+    addNewCardThunkCallback, addNewListThunkCallback, dragTaskInCurrentColumnThunkCallback, 
+    dragTaskInOtherColumnThunkCallback, dragColumnThunkCallback
+  })
 )(ListCardPage);

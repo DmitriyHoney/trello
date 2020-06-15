@@ -2,6 +2,7 @@ const ADD_NEW_CARD              = "ADD_NEW_CARD";
 const ADD_NEW_COLUMN            = "ADD_NEW_COLUMN";
 const DRAG_TASK_CURRENT_COLUMN  = "DRAG_TASK_CURRENT_COLUMN";
 const DRAG_TASK_OTHER_COLUMN    = "DRAG_TASK_OTHER_COLUMN";
+const DRAG_COLUMN               = "DRAG_COLUMN";
 
 let initialState = {
     boardId: 1,
@@ -38,7 +39,7 @@ const listCardReducer = (state = initialState, action) => {
                 title: action.cardText
             };
             let columnNeedAddTask = state.columns[action.columnId];
-            columnNeedAddTask.taskList.unshift(newTaskId);
+            columnNeedAddTask.taskList.push(newTaskId);
             return {
                 ...state,
                 lastTaskIndexId: state.lastTaskIndexId += 1,
@@ -84,6 +85,14 @@ const listCardReducer = (state = initialState, action) => {
                     }
                 }
             }
+        case DRAG_COLUMN:
+            let columnOrder = state.columnOrder;
+            let cutColumn = columnOrder.splice(action.sourceIndex, 1);
+            columnOrder.splice(action.destinationIndex, 0, cutColumn[0]);
+            return {
+                ...state,
+                columnOrder: columnOrder
+            }
         case DRAG_TASK_OTHER_COLUMN:
             let sourceColumn = state.columns[action.currentColumn]; //колонка в которой берем
             let destinationColumn = state.columns[action.destinationColumn]; //колонка куда отдаём
@@ -116,6 +125,7 @@ const listCardReducer = (state = initialState, action) => {
 //Action Creator
 export const addNewCardAC = (cardText, columnId) => ({type: ADD_NEW_CARD, cardText, columnId});
 export const addNewColumnAC = (listTitle) => ({type: ADD_NEW_COLUMN, listTitle});
+export const dragColumnAC = (sourceIndex, destinationIndex) => ({type: DRAG_COLUMN, sourceIndex, destinationIndex});
 export const dragTaskInCurrentColumnAC = (currentColumn, currentTaskindex, destinationTaskIndex) => ({
     type: DRAG_TASK_CURRENT_COLUMN, 
     currentColumn, 
@@ -142,6 +152,9 @@ export const dragTaskInCurrentColumnThunkCallback = (currentColumn, currentTaski
 }
 export const dragTaskInOtherColumnThunkCallback = (currentColumn, destinationColumn, currentTaskindex, destinationTaskIndex) => async dispatch => {
     dispatch(dragTaskInOtherColumnAC(currentColumn, destinationColumn, currentTaskindex, destinationTaskIndex));
+}
+export const dragColumnThunkCallback = (sourceIndex, destinationIndex) => async dispatch => {
+    dispatch(dragColumnAC(sourceIndex, destinationIndex));
 }
 
 export default listCardReducer;

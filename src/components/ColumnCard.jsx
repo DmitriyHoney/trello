@@ -3,17 +3,21 @@ import Task from "./Task";
 import styled from "styled-components";
 import AddButton from "./AddButton";
 import {Draggable, Droppable} from "react-beautiful-dnd";
+import DeleteButton from "./DeleteButton";
+import EditButton from "./EditButton";
+import ColumnTitle from "./ColumnTitle";
 
 const CardStyle = styled.div`
    padding-top: 28px;
 `;
-const ColumnTitleStyle = styled.h3`
-    font-size: 14px;
-    line-height: 20px;
-    font-weight: 600;
-    margin-bottom: 8px;
+
+const EditCardTitleStyle = styled.div`
+    display: flex;
+    align-items: center;
     position: absolute;
     top: 8px;
+    justify-content: space-between;
+    width: 93%;
 `;
 
 const ColumnCard = props => {
@@ -27,7 +31,19 @@ const ColumnCard = props => {
                         {...provided.droppableProps} 
                         isDraggingOver={snapshot.isDraggingOver}
                     >
-                        <ColumnTitleStyle>{title}</ColumnTitleStyle>
+                        <EditCardTitleStyle>
+                            <ColumnTitle 
+                                columnId={id}
+                                title={title} 
+                                changeColumnTitle={props.changeColumnTitle}
+                            />
+                            {/* <EditButton /> */}
+                            <DeleteButton 
+                                columnId={id}
+                                deleteColumn={props.deleteColumn}
+                            />
+                        </EditCardTitleStyle>
+                        
                         
                         {tasks.map((taskData, index) => {
                             return(
@@ -41,6 +57,7 @@ const ColumnCard = props => {
                                             key={taskData.id}
                                             id={taskData.id}
                                             index={index}
+                                            changeTaskTitle={props.changeTaskTitle}
                                         />
                                     )}
                                 </Draggable>

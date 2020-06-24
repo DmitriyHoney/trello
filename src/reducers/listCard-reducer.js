@@ -1,36 +1,57 @@
+import {listCardApi} from "../api/api";
+
 const ADD_NEW_CARD              = "ADD_NEW_CARD";
 const ADD_NEW_COLUMN            = "ADD_NEW_COLUMN";
 const DRAG_TASK_CURRENT_COLUMN  = "DRAG_TASK_CURRENT_COLUMN";
 const DRAG_TASK_OTHER_COLUMN    = "DRAG_TASK_OTHER_COLUMN";
 const DRAG_COLUMN               = "DRAG_COLUMN";
+const SET_DEFAULT_STATE         = "SET_DEFAULT_STATE";
+const SET_LOCAL_STORAGE_STATE   = "SET_LOCAL_STORAGE_STATE";
+const CHANGE_COLUMN_TITLE       = "CHANGE_COLUMN_TITLE";
+const DELETE_COLUMN             = "DELETE_COLUMN";
+const CHANGE_TASK_TITLE         = "CHANGE_TASK_TITLE";
 
-let initialState = {
+
+
+
+let defaultState = {
     boardId: 1,
     taskIdPrefixx: `task-`,
     listIdPreffix: `column-`,
-    lastListIndexId: 3,
-    lastTaskIndexId: 4,
-    tasks: {
-        'task-1': {id: 'task-1', title: "Помыть кота"},
-        'task-2': {id: 'task-2', title: "Помыть посуду"},
-        'task-3': {id: 'task-3', title: "Написать приложение"}
-    },
-    columns: {
-        'column-1': {
-            id: 'column-1',
-            title: 'to do',
-            taskList: ['task-1', 'task-2']
-        },
-        'column-2': {
-            id: 'column-2',
-            title: 'must doing',
-            taskList: ['task-3']
-        },
-    },
-    columnOrder: ['column-1', 'column-2'],
-};
+    lastListIndexId: 1,
+    lastTaskIndexId: 1,
+    tasks: {},
+    columns: {},
+    columnOrder: [],
+}
 
-const listCardReducer = (state = initialState, action) => {
+// let initialState = {
+//     boardId: 1,
+//     taskIdPrefixx: `task-`,
+//     listIdPreffix: `column-`,
+//     lastListIndexId: 3,
+//     lastTaskIndexId: 4,
+//     tasks: {
+//         'task-1': {id: 'task-1', title: "Помыть кота"},
+//         'task-2': {id: 'task-2', title: "Помыть посуду"},
+//         'task-3': {id: 'task-3', title: "Написать приложение"}
+//     },
+//     columns: {
+//         'column-1': {
+//             id: 'column-1',
+//             title: 'to do',
+//             taskList: ['task-1', 'task-2']
+//         },
+//         'column-2': {
+//             id: 'column-2',
+//             title: 'must doing',
+//             taskList: ['task-3']
+//         },
+//     },
+//     columnOrder: ['column-1', 'column-2'],
+// };
+
+const listCardReducer = (state = defaultState, action) => {
     switch(action.type) {
         case ADD_NEW_CARD: {
             let newTaskId = state.taskIdPrefixx + state.lastTaskIndexId;
@@ -93,6 +114,42 @@ const listCardReducer = (state = initialState, action) => {
                 ...state,
                 columnOrder: columnOrder
             }
+        case DELETE_COLUMN:
+            return {
+                ...state,
+                columnOrder: state.columnOrder.filter(id => id !== action.columnId)
+            }
+        case SET_DEFAULT_STATE:
+            return {
+                ...defaultState
+            }
+        case CHANGE_COLUMN_TITLE:
+            return {
+                ...state,
+                columns: {
+                    ...state.columns,
+                    [action.columnId]: {
+                        ...state.columns[action.columnId],
+                        title: action.title
+                    }
+                }
+            }
+        case SET_LOCAL_STORAGE_STATE:
+            return {
+                ...action.dataFromLocalStorage
+            }
+        case CHANGE_TASK_TITLE:
+            return {
+                ...state,
+                tasks: {
+                    ...state.tasks,
+                    [action.taskId]: {
+                        ...state.tasks[action.taskId],
+                        title: action.title
+                    }
+                }
+
+            }
         case DRAG_TASK_OTHER_COLUMN:
             let sourceColumn = state.columns[action.currentColumn]; //колонка в которой берем
             let destinationColumn = state.columns[action.destinationColumn]; //колонка куда отдаём
@@ -139,22 +196,60 @@ export const dragTaskInOtherColumnAC = (currentColumn, destinationColumn, curren
     currentTaskindex, 
     destinationTaskIndex
 });
+export const setDefaultStateAC = () => ({type: SET_DEFAULT_STATE});
+export const setListCardDataFromLocalStorageAC = (dataFromLocalStorage) => ({type: SET_LOCAL_STORAGE_STATE, dataFromLocalStorage});
+export const changeColumnTileAC = (columnId, title) => ({type: CHANGE_COLUMN_TITLE, columnId, title});
+export const deleteColumnAC = (columnId) => ({type: DELETE_COLUMN, columnId});
+export const changeTaskTitleAC = (taskId, title) => ({type: CHANGE_TASK_TITLE, taskId, title});
 
 //ThunkCallback
-export const addNewCardThunkCallback = (cardText, columnId) => async dispatch => {
+export const getListCardDataFromLocalStorage = () => async dispatch => {
+
+    let res = listCardApi.getDataFromLocalStorage(); //Пользователь получает карточку из localStorage
+    if (res) { //Если есть 
+        dispatch(setListCardDataFromLocalStorageAC(res))
+    } else { //Если нет
+        dispatch(setDefaultStateAC());
+    };
+}
+export const addNewCardThunkCallback = (cardText, columnId) => async (dispatch, getState) => {
     dispatch(addNewCardAC(cardText, columnId));
+    listCardApi.updateDataFromLocalStorage(getState().listCardPage);
 }
-export const addNewListThunkCallback = listTitle => async dispatch => {
+export const deleteColumnThunkCallback = columnId => async (dispatch, getState) => {
+    dispatch(deleteColumnAC(columnId));
+    listCardApi.updateDataFromLocalStorage(getState().listCardPage);
+}
+export const addNewListThunkCallback = listTitle => async (dispatch, getState) => {
     dispatch(addNewColumnAC(listTitle));
+    listCardApi.updateDataFromLocalStorage(getState().listCardPage);
 }
-export const dragTaskInCurrentColumnThunkCallback = (currentColumn, currentTaskindex, destinationTaskIndex) => async dispatch => {
+export const dragTaskInCurrentColumnThunkCallback = (currentColumn, currentTaskindex, destinationTaskIndex) => async (dispatch, getState) => {
     dispatch(dragTaskInCurrentColumnAC(currentColumn, currentTaskindex, destinationTaskIndex));
+    listCardApi.updateDataFromLocalStorage(getState().listCardPage);
 }
-export const dragTaskInOtherColumnThunkCallback = (currentColumn, destinationColumn, currentTaskindex, destinationTaskIndex) => async dispatch => {
+export const dragTaskInOtherColumnThunkCallback = (currentColumn, destinationColumn, currentTaskindex, destinationTaskIndex) => async (dispatch, getState) => {
     dispatch(dragTaskInOtherColumnAC(currentColumn, destinationColumn, currentTaskindex, destinationTaskIndex));
+    listCardApi.updateDataFromLocalStorage(getState().listCardPage);
 }
-export const dragColumnThunkCallback = (sourceIndex, destinationIndex) => async dispatch => {
+export const dragColumnThunkCallback = (sourceIndex, destinationIndex) => async (dispatch, getState) => {
     dispatch(dragColumnAC(sourceIndex, destinationIndex));
+    listCardApi.updateDataFromLocalStorage(getState().listCardPage);
 }
+
+export const changeColumnTitleThunkCallback = (columnId, newTitle) => async (dispatch, getState) => {
+    dispatch(changeColumnTileAC(columnId, newTitle));
+    listCardApi.updateDataFromLocalStorage(getState().listCardPage);
+}
+
+
+export const changeTaskTitleThunkCallback = (taskId, title) => async (dispatch, getState) => {
+    dispatch(changeTaskTitleAC(taskId, title));
+    listCardApi.updateDataFromLocalStorage(getState().listCardPage);
+}
+
+
+
+
 
 export default listCardReducer;

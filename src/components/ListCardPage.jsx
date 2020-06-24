@@ -7,7 +7,8 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 import {
   addNewCardThunkCallback, addNewListThunkCallback, dragTaskInCurrentColumnThunkCallback, 
-  dragTaskInOtherColumnThunkCallback, dragColumnThunkCallback,
+  dragTaskInOtherColumnThunkCallback, dragColumnThunkCallback, getListCardDataFromLocalStorage,
+  changeColumnTitleThunkCallback, deleteColumnThunkCallback, changeTaskTitleThunkCallback
 } from "../reducers/listCard-reducer";
 import {DragDropContext, Droppable, Draggable} from "react-beautiful-dnd";
 
@@ -48,8 +49,9 @@ let mapStateToProps = state => ({
 
 
 class ListCardPage extends React.Component {
-  constructor(props) {
-    super(props)
+
+  componentDidMount() {
+    this.props.getListCardDataFromLocalStorage();
   }
 
   addNewCard = (cardText, columnId) => {
@@ -99,6 +101,19 @@ class ListCardPage extends React.Component {
 
   }
 
+  changeTaskTitle = (taskId, title) => {
+    this.props.changeTaskTitleThunkCallback(taskId, title);
+  }
+
+  deleteColumn = columnId => {
+    console.log(columnId);
+    this.props.deleteColumnThunkCallback(columnId);
+  }
+
+  changeColumnTitle = (columnId, newTitle) => {
+    this.props.changeColumnTitleThunkCallback(columnId, newTitle);
+  }
+
 
 
   render() {
@@ -130,6 +145,9 @@ class ListCardPage extends React.Component {
                                     key={oneColumn.id}
                                     index={index}
                                     addNewCard={this.addNewCard}
+                                    changeColumnTitle={this.changeColumnTitle}
+                                    deleteColumn={this.deleteColumn}
+                                    changeTaskTitle={this.changeTaskTitle}
                                     tasks={tasks} //Таски для этой карточки
                                     {...oneColumn} //Данные для одной колонки
                                   />
@@ -159,6 +177,7 @@ class ListCardPage extends React.Component {
 export default compose(
   connect(mapStateToProps, {
     addNewCardThunkCallback, addNewListThunkCallback, dragTaskInCurrentColumnThunkCallback, 
-    dragTaskInOtherColumnThunkCallback, dragColumnThunkCallback
+    dragTaskInOtherColumnThunkCallback, dragColumnThunkCallback, getListCardDataFromLocalStorage,
+    changeColumnTitleThunkCallback, deleteColumnThunkCallback, changeTaskTitleThunkCallback
   })
 )(ListCardPage);

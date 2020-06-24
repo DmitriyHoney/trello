@@ -48,10 +48,14 @@ const EditButtonStyle = styled.div`
     color: grey;
     padding: 2px 5px;
     border-radius: 3px;
+    margin-right: 5px;
     &:hover {
         background-color: rgba(0, 0, 0, .055);
-        
     }
+`;
+const TaskButtonStyle = styled.div`
+    display: flex;
+    align-items: center;
 `;
 
 const Task = props => {
@@ -96,9 +100,16 @@ const Task = props => {
     return(
         <TaskContainerStyle {...props} ref={props.innerRef} >
             {title}   
-            <EditButtonStyle onClick={handleEditTaskBtn}>
-                <i className="fa fa-pencil"></i>
-            </EditButtonStyle>
+            <TaskButtonStyle>
+                <EditButtonStyle onClick={handleEditTaskBtn}>
+                    <i className="fa fa-pencil"></i>
+                </EditButtonStyle>
+                <DeleteButton 
+                    deletedElementId={props.id}
+                    whereDelete={props.columnId}
+                    deleteEvent={props.deleteTask}
+                />
+            </TaskButtonStyle>
         </TaskContainerStyle>
     )
 };

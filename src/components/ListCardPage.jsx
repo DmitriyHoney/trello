@@ -8,7 +8,8 @@ import { connect } from 'react-redux';
 import {
   addNewCardThunkCallback, addNewListThunkCallback, dragTaskInCurrentColumnThunkCallback, 
   dragTaskInOtherColumnThunkCallback, dragColumnThunkCallback, getListCardDataFromLocalStorage,
-  changeColumnTitleThunkCallback, deleteColumnThunkCallback, changeTaskTitleThunkCallback
+  changeColumnTitleThunkCallback, deleteColumnThunkCallback, changeTaskTitleThunkCallback,
+  deleteTaskIdThunkCallback
 } from "../reducers/listCard-reducer";
 import {DragDropContext, Droppable, Draggable} from "react-beautiful-dnd";
 
@@ -114,6 +115,10 @@ class ListCardPage extends React.Component {
     this.props.changeColumnTitleThunkCallback(columnId, newTitle);
   }
 
+  deleteTask = (taskId, whereDelete) => {
+    this.props.deleteTaskIdThunkCallback(taskId, whereDelete);
+  }
+
 
 
   render() {
@@ -148,6 +153,7 @@ class ListCardPage extends React.Component {
                                     changeColumnTitle={this.changeColumnTitle}
                                     deleteColumn={this.deleteColumn}
                                     changeTaskTitle={this.changeTaskTitle}
+                                    deleteTask={this.deleteTask}
                                     tasks={tasks} //Таски для этой карточки
                                     {...oneColumn} //Данные для одной колонки
                                   />
@@ -178,6 +184,7 @@ export default compose(
   connect(mapStateToProps, {
     addNewCardThunkCallback, addNewListThunkCallback, dragTaskInCurrentColumnThunkCallback, 
     dragTaskInOtherColumnThunkCallback, dragColumnThunkCallback, getListCardDataFromLocalStorage,
-    changeColumnTitleThunkCallback, deleteColumnThunkCallback, changeTaskTitleThunkCallback
+    changeColumnTitleThunkCallback, deleteColumnThunkCallback, changeTaskTitleThunkCallback,
+    deleteTaskIdThunkCallback
   })
 )(ListCardPage);

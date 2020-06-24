@@ -20,6 +20,8 @@ const EditCardTitleStyle = styled.div`
     width: 93%;
 `;
 
+
+
 const ColumnCard = props => {
     let {id, title, tasks} = props;
     return(
@@ -39,8 +41,8 @@ const ColumnCard = props => {
                             />
                             {/* <EditButton /> */}
                             <DeleteButton 
-                                columnId={id}
-                                deleteColumn={props.deleteColumn}
+                                deletedElementId={id}
+                                deleteEvent={props.deleteColumn}
                             />
                         </EditCardTitleStyle>
                         
@@ -56,8 +58,10 @@ const ColumnCard = props => {
                                             {...taskData} 
                                             key={taskData.id}
                                             id={taskData.id}
+                                            columnId={id}
                                             index={index}
                                             changeTaskTitle={props.changeTaskTitle}
+                                            deleteTask={props.deleteTask}
                                         />
                                     )}
                                 </Draggable>

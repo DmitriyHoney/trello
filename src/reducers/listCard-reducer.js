@@ -10,6 +10,7 @@ const SET_LOCAL_STORAGE_STATE   = "SET_LOCAL_STORAGE_STATE";
 const CHANGE_COLUMN_TITLE       = "CHANGE_COLUMN_TITLE";
 const DELETE_COLUMN             = "DELETE_COLUMN";
 const CHANGE_TASK_TITLE         = "CHANGE_TASK_TITLE";
+const DELETE_TASK_ID            = "DELETE_TASK_ID";
 
 
 
@@ -138,6 +139,27 @@ const listCardReducer = (state = defaultState, action) => {
             return {
                 ...action.dataFromLocalStorage
             }
+        case DELETE_TASK_ID:
+            let newTasks = {}; 
+            for (let key in state.tasks) {
+                if (key !== action.taskId) {
+                    newTasks[key] = state.tasks[key];
+                }
+            }
+            
+
+            
+            return {
+                ...state,
+                columns: {
+                    ...state.columns,
+                    [action.whereDelete]: {
+                        ...state.columns[action.whereDelete],
+                        taskList: state.columns[action.whereDelete].taskList.filter(elem => elem !== action.taskId)
+                    }
+                },
+                tasks: {...newTasks}
+            }
         case CHANGE_TASK_TITLE:
             return {
                 ...state,
@@ -201,6 +223,7 @@ export const setListCardDataFromLocalStorageAC = (dataFromLocalStorage) => ({typ
 export const changeColumnTileAC = (columnId, title) => ({type: CHANGE_COLUMN_TITLE, columnId, title});
 export const deleteColumnAC = (columnId) => ({type: DELETE_COLUMN, columnId});
 export const changeTaskTitleAC = (taskId, title) => ({type: CHANGE_TASK_TITLE, taskId, title});
+export const deleteTaskIdAC = (taskId, whereDelete) => ({type: DELETE_TASK_ID, taskId, whereDelete});
 
 //ThunkCallback
 export const getListCardDataFromLocalStorage = () => async dispatch => {
@@ -245,6 +268,12 @@ export const changeColumnTitleThunkCallback = (columnId, newTitle) => async (dis
 
 export const changeTaskTitleThunkCallback = (taskId, title) => async (dispatch, getState) => {
     dispatch(changeTaskTitleAC(taskId, title));
+    listCardApi.updateDataFromLocalStorage(getState().listCardPage);
+}
+
+
+export const deleteTaskIdThunkCallback = (taskId, whereDelete) => async (dispatch, getState) => {
+    dispatch(deleteTaskIdAC(taskId, whereDelete));
     listCardApi.updateDataFromLocalStorage(getState().listCardPage);
 }
 

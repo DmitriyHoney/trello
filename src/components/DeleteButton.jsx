@@ -12,12 +12,18 @@ const DeleteButtonStyle = styled.div`
 
 const DeleteButton = props => {
 
-    let handleButton = () => {
-        props.deleteColumn(props.columnId)
+    // let handleButton = () => {
+    //     props.deleteColumn(props.columnId)
+    // }
+
+    let deleteEvent = () => {
+        if (!props.whereDelete) props.deleteEvent(props.deletedElementId)
+        props.deleteEvent(props.deletedElementId, props.whereDelete)
     }
+
    
     return(
-        <DeleteButtonStyle onClick={handleButton}>
+        <DeleteButtonStyle onClick={deleteEvent}>
             <span>
                 <i className="fa fa-trash-o"></i>
             </span>
